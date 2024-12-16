@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 
-export function ExpensesUI() {
+export function Addexpense() {
     const {
       register,
       handleSubmit,

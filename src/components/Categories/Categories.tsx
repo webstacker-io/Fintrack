@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 
-export function CategoriesUI() {
+export function Categories() {
   const {
     register,
     handleSubmit,

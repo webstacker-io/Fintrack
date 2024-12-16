@@ -6,7 +6,7 @@ interface Props {
   expenses: Expense[];
 }
 
-export function ExpenseList({ expenses }: Props) {
+export function ExpenseWidget({ expenses }: Props) {
   return (
     <div className="bg-white rounded-xl shadow-sm">
       <div className="p-6">

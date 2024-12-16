@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 
 import { Wallet, Menu, X } from 'lucide-react';
 import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
-import { CategoriesUI } from './components/Categories/Categories';
-import { ExpensesUI } from './components/Expenses/Expenses';
+import { Categories } from './components/Categories/Categories';
+import { Addexpense } from './components/Expenses/Addexpense';
 import Dashboard from './components/Dashboard/Dashboard';
-
+import logo from './assets/images/fintrack-logo.png'
 function App() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
 
@@ -26,7 +26,7 @@ function App() {
         </div>
         <div className="flex flex-col items-center space-y-4 mt-6">
           <div className="p-3 bg-blue-200 rounded-full">
-            <Wallet className="w-6 h-6 text-blue-600" />
+             <Wallet className="w-6 h-6 text-blue-600" />
           </div>
         </div>
       </div>
@@ -37,8 +37,9 @@ function App() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               <div className="flex items-center">
-                <Wallet className="w-8 h-8 text-blue-600" />
-                <span className="ml-2 text-xl font-semibold">FinTrack</span>
+                {/* <Wallet className="w-8 h-8 text-blue-600" />
+                <span className="ml-2 text-xl font-semibold">FinTrack</span> */}
+                <img src={logo} className='w-70 h-20' />
               </div>
               <div className="flex space-x-4">
               <NavLink 
@@ -73,8 +74,8 @@ function App() {
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/categories" element={<CategoriesUI />} />
-            <Route path="/expenses" element={<ExpensesUI />} />
+            <Route path="/categories" element={<Categories />} />
+            <Route path="/expenses" element={<Addexpense />} />
           </Routes>
         </main>
       </div>
