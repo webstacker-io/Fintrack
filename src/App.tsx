@@ -5,11 +5,14 @@ import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-do
 import { Categories } from './components/Categories/Categories';
 import { Addexpense } from './components/Expenses/Addexpense';
 import Dashboard from './components/Dashboard/Dashboard';
-import logo from './assets/images/fintrack-logo.png'
+import logo from './assets/images/fintrack-logo.png';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+const queryClient = new QueryClient();
 function App() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   return (
+    <QueryClientProvider client={queryClient}>
     <Router>
     <div className="min-h-screen flex bg-gray-50">
       {/* Sidebar */}
@@ -81,6 +84,7 @@ function App() {
       </div>
     </div>
     </Router>
+    </QueryClientProvider>
   );
 }
 
