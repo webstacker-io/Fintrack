@@ -1,122 +1,92 @@
+// Enhanced FinTrack Categories Page with Edit Functionality, Prefilled Modal, and React Hook Form Validation
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { motion } from 'framer-motion';
+import { Dialog, DialogTitle } from '@headlessui/react';
+import { Pencil, Trash2 } from 'lucide-react';
 
-export function Categories() {
-  const [categories, setCategories] = useState([]);
-  const [editingIndex, setEditingIndex] = useState(null);
+export const Categories = () => {
+  const [categories, setCategories] = useState([
+    { name: 'Food' },
+    { name: 'Utilities' },
+    { name: 'Health' },
+    { name: 'Entertainment' },
+    { name: 'Work' },
+  ]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentCategory, setCurrentCategory] = useState(null);
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    setValue,
-    formState: { errors },
-  } = useForm();
+  const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
-  // Function to handle Add/Update Category
-  const onSubmit = (data: any) => {
-    if (editingIndex !== null) {
-      // Edit existing category
-      const updatedCategories = [...categories];
-      updatedCategories[editingIndex] = data;
-      setCategories(updatedCategories);
-      setEditingIndex(null);
+  const onSubmit = (data) => {
+    if (isEditing) {
+      setCategories(categories.map((category) => (
+        category === currentCategory ? { ...category, ...data } : category
+      )));
     } else {
-      // Add new category
-      setCategories((prev) => [...prev, data]);
+      setCategories([...categories, { ...data }]);
     }
     reset();
+    setIsModalOpen(false);
+    setIsEditing(false);
   };
 
-  // Function to handle Edit action
-  const handleEdit = (index: number | React.SetStateAction<null>) => {
-    const category = categories[index];
-    setValue('name', category.name);
-    setEditingIndex(index);
-  };
-
-  // Function to handle Delete action
-  const handleDelete = (index: number) => {
-    const updatedCategories = categories.filter((_, i) => i !== index);
-    setCategories(updatedCategories);
+  const handleEdit = (category) => {
+    setIsEditing(true);
+    setCurrentCategory(category);
+    setIsModalOpen(true);
+    reset(category);
   };
 
   return (
-    <div className="p-6">
-      {/* Add Category Form */}
-      <div className="bg-white p-6 rounded-lg shadow-md max-w-4xl mx-auto mb-8">
-        <h2 className="text-2xl font-bold mb-4">
-          {editingIndex !== null ? 'Edit Category' : 'Add Category'}
-        </h2>
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4"
-        >
-          {/* Category Name Field */}
-          <div className="flex-1">
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-              Category Name
-            </label>
-            <input
-              id="name"
-              type="text"
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:outline-none ${
-                errors.name ? 'border-red-500' : ''
-              }`}
-              {...register('name', { required: 'Category name is required' })}
-            />
-            {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
-          </div>
+    <div className="p-6 space-y-8">
+      {/* Add/Edit Category Button */}
+      <motion.div className="flex justify-end" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}>
+        <button onClick={() => { setIsModalOpen(true); reset(); setIsEditing(false); }} className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition">
+          Add Category
+        </button>
+      </motion.div>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            className="w-full md:w-auto bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700 focus:outline-none"
-          >
-            {editingIndex !== null ? 'Update Category' : 'Add Category'}
-          </button>
-        </form>
-      </div>
+      {/* Modal Form */}
+      <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)} className="fixed inset-0 z-10 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black bg-opacity-30" aria-hidden="true" />
+        <motion.div className="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full z-10" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
+          <DialogTitle className="text-lg font-bold mb-4">{isEditing ? 'Edit Category' : 'Add New Category'}</DialogTitle>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <input type="text" placeholder="Category Name" {...register('name', { required: 'Name is required' })} className="w-full p-2 rounded-lg border focus:ring-2 focus:ring-indigo-300 mb-4" />
+            {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
+            <div className="flex justify-end space-x-2">
+              <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-3 bg-gray-300 rounded-lg hover:bg-gray-400">Cancel</button>
+              <button type="submit" className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">{isEditing ? 'Update' : 'Add'}</button>
+            </div>
+          </form>
+        </motion.div>
+      </Dialog>
 
-      {/* Categories List Table */}
-      <div className="bg-white p-6 rounded-lg shadow-md max-w-4xl mx-auto">
-        <h2 className="text-2xl font-bold mb-4">Categories</h2>
-        {categories.length > 0 ? (
-          <table className="w-full border-collapse border border-gray-200">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="border border-gray-200 px-4 py-2 text-left">#</th>
-                <th className="border border-gray-200 px-4 py-2 text-left">Category Name</th>
-                <th className="border border-gray-200 px-4 py-2 text-left">Actions</th>
+      {/* Categories Table */}
+      <div className="bg-white shadow-lg rounded-2xl overflow-hidden">
+        <table className="min-w-full text-left">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="px-6 py-3">Category Name</th>
+              <th className="px-6 py-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {categories.map((category, index) => (
+              <tr key={index} className="border-t">
+                <td className="px-6 py-3">{category.name}</td>
+                <td className="px-6 py-3 space-x-2">
+                  <button onClick={() => handleEdit(category)} className="text-indigo-600 hover:underline"><Pencil color="#2026df" /></button>
+                  <button className="text-red-600 hover:underline"><Trash2 color="#e61e3c" /></button>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {categories.map((category, index) => (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="border border-gray-200 px-4 py-2">{index + 1}</td>
-                  <td className="border border-gray-200 px-4 py-2">{category.name}</td>
-                  <td className="border border-gray-200 px-4 py-2 space-x-2">
-                    <button
-                      onClick={() => handleEdit(index)}
-                      className="text-blue-600 hover:underline"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(index)}
-                      className="text-red-600 hover:underline"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <p className="text-gray-500">No categories added yet.</p>
-        )}
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
-}
+};
