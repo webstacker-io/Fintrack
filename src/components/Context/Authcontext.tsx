@@ -1,11 +1,19 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, ReactNode, useContext, useState } from "react";
 
-const AuthContext = createContext('');
+interface AuthContextType {
+  user: any; // Replace `any` with your actual User type
+  login: (userData: any) => void;
+  logout: () => void;
+}
 
-export const AuthProvider = ({ children }) => {
+// Create a context with a default `undefined` value
+const AuthContext = createContext<AuthContextType | undefined | any>([]);
+
+
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState(null);
 
-  const login = (userData) => {
+  const login = (userData : any) => {
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
   };
@@ -22,6 +30,11 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => {
-  return useContext(AuthContext);
+// Hook to use the Auth Context
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
 };
