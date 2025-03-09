@@ -2,7 +2,7 @@ import { createContext, ReactNode, useContext, useState } from "react";
 
 interface AuthContextType {
   user: any; // Replace `any` with your actual User type
-  login: (userData: any) => void;
+  login: (userData: any) => any;
   logout: () => void;
 }
 

@@ -1,12 +1,19 @@
 import { Navigate, NavLink } from "react-router-dom";
 import { useAuth } from "../Context/Authcontext";
-import { X, Menu, Wallet } from "lucide-react";
+import { X, Menu, Wallet,LogOut, User } from "lucide-react";
 import { useState } from "react";
-
-const Layout = ({ children }) => {
+import logo from "../../assets/images/fintrack-logo.png";
+const Layout = ({ children }: any) => {
   const { user } = useAuth();
-const [isSidebarOpen, setSidebarOpen] = useState(false);
-  return( user ?
+  const [isOpen, setIsOpen] = useState(false);
+  const localUser= JSON.parse(localStorage.getItem("user") || "{}");
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // ✅ Clear auth token
+    alert("Logged out!");
+    window.location.href = "/login"; // ✅ Redirect to login
+  };
+  return( (user || localUser) ?
     
     <div className="min-h-screen flex bg-gray-50">
       {/* Sidebar */}
@@ -71,6 +78,24 @@ const [isSidebarOpen, setSidebarOpen] = useState(false);
                 >
                   signup
                 </NavLink>
+                {/* User Dropdown */}
+                <div className="relative">
+                  <button onClick={() => setIsOpen(!isOpen)} className="flex items-center space-x-2 focus:outline-none">
+                    <User className="w-8 h-8 text-white bg-gray-700 p-1 rounded-full border-2 border-white" />
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {isOpen && (
+                    <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-lg py-2">
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      >
+                        <LogOut className="w-5 h-5 mr-2" /> Logout
+                      </button>
+                    </div>
+                  )}
+                  </div>
               </div>
             </div>
           </div>

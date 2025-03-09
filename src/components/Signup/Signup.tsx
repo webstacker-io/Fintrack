@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";  
 import { ArrowLeftToLine, ArrowRightToLine } from "lucide-react"
 import "./Signup.css";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,6 +27,7 @@ const signInSchema = z.object({
 const Signup = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const { login } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   // Form handling for Sign Up
@@ -53,6 +55,7 @@ const Signup = () => {
     onSuccess: (data: any) => {
       login(data);
       queryClient.invalidateQueries({ queryKey: ["user"] });
+      navigate("/dashboard"); 
       alert("Sign up successful! Redirecting...");
     },
     onError: (error: any) => {
@@ -65,10 +68,11 @@ const Signup = () => {
     mutationFn: signInUser,
     onSuccess: (data) => {
       login(data);
-        
+      navigate("/dashboard");   
       alert("Sign in successful! Redirecting...");
     },
     onError: (error: any) => {
+      console.log(error)
       alert(error.response?.data?.message || "Invalid credentials");
     },
   });
@@ -133,19 +137,44 @@ const Signup = () => {
         <div className="form-container sign-in-container mt-6">
           <div className="p-6 space-y-4 md:space-y-6 sm:p-8 mt-6">
 
-            <form className="space-y-4 md:space-y-6 mt-6 p-5" >
-              <div>
-                <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 ">Email</label>
-                <input type="email" name="email" id="email" className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 " placeholder="name@company.com" />
-              </div>
-              <div className="mb-6">
-                <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-900 ">Password</label>
-                <input type="password" name="password" id="password" placeholder="••••••••" className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 " />
-              </div>
+          <form className="space-y-4 md:space-y-6 mt-6 p-5" onSubmit={handleSubmit((data) => signInMutation.mutate(data))}>
+      {/* Email Field */}
+      <div>
+        <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900">
+          Email
+        </label>
+        <input
+          type="email"
+          {...register("email")}
+          className={`bg-gray-50 border ${errorsSignIn.email ? 'border-red-500' : 'border-gray-300'} text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5`}
+          placeholder="name@company.com"
+        />
+        {errorsSignIn.email && <p className="text-red-500">{errorsSignIn.email.message}</p>}
+      </div>
 
-              <button type="button" className="w-full text-white !bg-sky-400 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-full text-sm px-5 py-2.5 text-center ">Sign in</button>
+      {/* Password Field */}
+      <div>
+        <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-900">
+          Password
+        </label>
+        <input
+          type="password"
+          {...register("password")}
+          className={`bg-gray-50 border ${errorsSignIn.password ? 'border-red-500' : 'border-gray-300'} text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5`}
+          placeholder="••••••••"
+        />
+        {errorsSignIn.password && <p className="text-red-500">{errorsSignIn.password.message}</p>}
+      </div>
 
-            </form>
+      {/* Submit Button */}
+      <button
+        type="submit"
+        className="w-full text-white bg-sky-400 hover:bg-sky-600 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-full text-sm px-5 py-2.5 text-center"
+        
+      >
+       Sign in
+      </button>
+    </form>
           </div>
         </div>
 
