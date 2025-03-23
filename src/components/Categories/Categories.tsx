@@ -1,43 +1,69 @@
-// Enhanced FinTrack Categories Page with Edit Functionality, Prefilled Modal, and React Hook Form Validation
-
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { motion } from 'framer-motion';
-import { Dialog, DialogTitle } from '@headlessui/react';
-import { Pencil, Trash2 } from 'lucide-react';
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { motion } from "framer-motion";
+import { Dialog, DialogTitle } from "@headlessui/react";
+import { Pencil, Trash2 } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { createCategory, deleteCategory, getCategories, updateCategory } from "../../services/Api";
+import { useAuth } from "../../providers/AuthContext";
 
 export const Categories = () => {
-  const [categories, setCategories] = useState([
-    { name: 'Food' },
-    { name: 'Utilities' },
-    { name: 'Health' },
-    { name: 'Entertainment' },
-    { name: 'Work' },
-  ]);
+  
+  const queryClient = useQueryClient();
+  const { token } = useAuth();
+  console.log(token)
+
+  // ✅ Fetch categories from API
+  const { data: categories, isLoading } = useQuery({
+    queryKey: ["categories"],
+    queryFn: () => getCategories(token),
+  });
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [currentCategory, setCurrentCategory] = useState(null);
+  const [currentCategory, setCurrentCategory] = useState<{ id?: number; Name: string } | null>(null);
+
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
-  const onSubmit = (data) => {
-    if (isEditing) {
-      setCategories(categories.map((category) => (
-        category === currentCategory ? { ...category, ...data } : category
-      )));
+  // ✅ Mutation for Creating a Category
+  const createMutation = useMutation({
+    mutationFn: () => createCategory(token, data),
+    onSuccess: () => queryClient.invalidateQueries(["list"]),
+  });
+
+  // ✅ Mutation for Updating a Category
+  const updateMutation = useMutation({
+    mutationFn: ({ id, name }: { id: number; name: string }) => updateCategory(id, { name }),
+    onSuccess: () => queryClient.invalidateQueries(["list"]),
+  });
+
+  // ✅ Mutation for Deleting a Category
+  const deleteMutation = useMutation({
+    mutationFn: deleteCategory,
+    onSuccess: () => queryClient.invalidateQueries(["list"]),
+  });
+
+  const onSubmit = (data: { name: string }) => {
+    if (isEditing && currentCategory?.CatergoryID) {
+      updateMutation.mutate({ id: currentCategory.CatergoryID, Name: data.name });
     } else {
-      setCategories([...categories, { ...data }]);
+      createMutation.mutate(data);
     }
     reset();
     setIsModalOpen(false);
     setIsEditing(false);
   };
 
-  const handleEdit = (category) => {
+  const handleEdit = (category: any) => {
     setIsEditing(true);
     setCurrentCategory(category);
     setIsModalOpen(true);
     reset(category);
+  };
+
+  const handleDelete = (id: number) => {
+    deleteMutation.mutate(id);
   };
 
   return (
@@ -53,13 +79,15 @@ export const Categories = () => {
       <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)} className="fixed inset-0 z-10 flex items-center justify-center">
         <div className="fixed inset-0 bg-black bg-opacity-30" aria-hidden="true" />
         <motion.div className="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full z-10" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-          <DialogTitle className="text-lg font-bold mb-4">{isEditing ? 'Edit Category' : 'Add New Category'}</DialogTitle>
+          <DialogTitle className="text-lg font-bold mb-4">{isEditing ? "Edit Category" : "Add New Category"}</DialogTitle>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <input type="text" placeholder="Category Name" {...register('name', { required: 'Name is required' })} className="w-full p-2 rounded-lg border focus:ring-2 focus:ring-indigo-300 mb-4" />
+            <input type="text" placeholder="Category Name" defaultValue={isEditing ? currentCategory?.Name : ''}
+            
+            {...register("name", { required: "Name is required" })} className="w-full p-2 rounded-lg border focus:ring-2 focus:ring-indigo-300 mb-4" />
             {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
             <div className="flex justify-end space-x-2">
               <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-3 bg-gray-300 rounded-lg hover:bg-gray-400">Cancel</button>
-              <button type="submit" className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">{isEditing ? 'Update' : 'Add'}</button>
+              <button type="submit" className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">{isEditing ? "Update" : "Add"}</button>
             </div>
           </form>
         </motion.div>
@@ -75,18 +103,23 @@ export const Categories = () => {
             </tr>
           </thead>
           <tbody>
-            {categories.map((category, index) => (
-              <tr key={index} className="border-t">
-                <td className="px-6 py-3">{category.name}</td>
-                <td className="px-6 py-3 space-x-2">
-                  <button onClick={() => handleEdit(category)} className="text-indigo-600 hover:underline"><Pencil color="#2026df" /></button>
-                  <button className="text-red-600 hover:underline"><Trash2 color="#e61e3c" /></button>
-                </td>
-              </tr>
-            ))}
+            {isLoading ? (
+              <tr><td colSpan={2} className="text-center py-4">Loading...</td></tr>
+            ) : (
+              categories?.map((category: any) => (
+                <tr key={category.id} className="border-t">
+                  <td className="px-6 py-3">{category.Name}</td>
+                  <td className="px-6 py-3 space-x-2">
+                    <button onClick={() => handleEdit(category)} className="text-indigo-600 hover:underline"><Pencil color="#2026df" /></button>
+                    <button onClick={() => handleDelete(category.id)} className="text-red-600 hover:underline"><Trash2 color="#e61e3c" /></button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
     </div>
   );
 };
+

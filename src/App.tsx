@@ -8,16 +8,14 @@ import Dashboard from './components/Dashboard/Dashboard';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Signup from './components/Signup/Signup';
 import Layout from './components/Layout/Layout';
-import { useAuth, AuthProvider } from './components/Context/Authcontext';
-
+import { AuthProvider } from './providers/AuthContext';
 
 const queryClient = new QueryClient();
 
 const HomeRedirect = () => {
-  const { user } = useAuth();
   const localUser= JSON.parse(localStorage.getItem("user")|| "{}");
-  console.log(localUser)
-  return (user || localUser) ? <Navigate to="/dashboard" replace /> : <Navigate to="/auth" replace />;
+  
+  return (localUser) ? <Navigate to="/dashboard" replace /> : <Navigate to="/auth" replace />;
 };
 function App() {
   return (

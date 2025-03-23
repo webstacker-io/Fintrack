@@ -4,10 +4,10 @@ import { ArrowLeftToLine, ArrowRightToLine } from "lucide-react"
 import "./Signup.css";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useAuth } from "../Context/Authcontext";
 import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { signInUser, signUpUser } from "../../services/Api";
+import { useAuth } from "../../providers/AuthContext";
 
 // Schema validation using Zod
 const signUpSchema = z.object({
@@ -26,9 +26,10 @@ const signInSchema = z.object({
 
 const Signup = () => {
   const [isSignUp, setIsSignUp] = useState(false);
-  const { login } = useAuth();
+  const { login, dispatch } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  
 
   // Form handling for Sign Up
   const {
@@ -54,12 +55,12 @@ const Signup = () => {
     mutationFn: signUpUser,
     onSuccess: (data: any) => {
       login(data);
+      
       queryClient.invalidateQueries({ queryKey: ["user"] });
-      navigate("/dashboard"); 
-      alert("Sign up successful! Redirecting...");
+      navigate("/dashboard");
     },
     onError: (error: any) => {
-      alert(error.response?.data?.message || "Sign up failed");
+      console.log(error.response?.data?.message || "Sign up failed");
     },
   });
 
@@ -68,12 +69,11 @@ const Signup = () => {
     mutationFn: signInUser,
     onSuccess: (data) => {
       login(data);
+      console.log(data)
       navigate("/dashboard");   
-      alert("Sign in successful! Redirecting...");
     },
     onError: (error: any) => {
-      console.log(error)
-      alert(error.response?.data?.message || "Invalid credentials");
+      console.log(error);
     },
   });
 
@@ -179,7 +179,7 @@ const Signup = () => {
         </div>
 
         {/* Overlay Container */}
-        <div className="overlay-container">
+        <div className="overlay-container xs:hidden">
           <div className="overlay bg-radial-[at_50%_75%] from-sky-200 via-blue-400 to-indigo-900 to-90% text-white-900">
             <div className="overlay-panel overlay-left">
               <h1 className="text-5xl p-6">Welcome Back!</h1>
@@ -201,6 +201,8 @@ const Signup = () => {
             </div>
           </div>
         </div>
+
+
       </div>
     </div>
   );
