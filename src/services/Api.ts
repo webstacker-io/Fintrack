@@ -8,18 +8,18 @@ export const getCategories = async () => {
   return response;
 };
 
-export const createCategory = async (category: { name: string }) => {
+export const createCategory = async (category: { name: string, Description: string }) => {
   const response = await apiRequest('POST','fintrack/categories/create', category);
   return response;
 };
 
-export const updateCategory = async (id: number, category: { Name: string }) => {
+export const updateCategory = async (id: number, category: { Name: string, Description: string }) => {
   const response = await apiRequest('PUT',`fintrack/categories/update/${id}`, category);
   return response.data;
 };
 
 export const deleteCategory = async (id: number) => {
-  const response = await apiRequest('DELETE',"");
+  const response = await apiRequest('DELETE',`fintrack/categories/delete/${id}`);
   return response.data;
 };
 
@@ -43,10 +43,7 @@ export const deleteExpense = async (id: any) => {
 
 // Sign Up API
 export const signUpUser = async (data: any) => {
-  // const response = await apiRequestInstance.post("/auth/register", {
-  //   email: data.email,
-  //   password: data.password, 
-  // });
+  
 
   const response = await apiRequest("POST","auth/register",{
     email: data.email,
